@@ -27,7 +27,7 @@ def get_course_info(course_url):
     else:
         soup = BeautifulSoup(course_html, 'lxml')
         
-        name = soup.find("h1").string
+        title = soup.find("h1").string
         language = soup.find('div', class_='language-info').contents[0].contents[1]
         
         try:
@@ -46,7 +46,7 @@ def get_course_info(course_url):
         start_soup = soup.find("div", class_='startdate rc-StartDateString caption-text').contents[0].string
         start = re.sub("Starts\s", '', start_soup)
         
-        return name, language, commitment, rating, start
+        return title, language, commitment, rating, start
 
 
 def output_courses_info_to_xlsx(filedata, filepath):
