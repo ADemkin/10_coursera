@@ -27,27 +27,26 @@ def get_course_info(course_url):
     else:
         soup = BeautifulSoup(course_html, 'lxml')
         
-        course_name = soup.find("h1").string
-        course_language = soup.find('div', class_='language-info').contents[0].contents[1]
+        name = soup.find("h1").string
+        language = soup.find('div', class_='language-info').contents[0].contents[1]
         
         try:
-            course_commitment = soup.find('span', class_='td-title', string='Commitment').parent.parent.contents[1].string
+            commitment = soup.find('span', class_='td-title', string='Commitment').parent.parent.contents[1].string
         except AttributeError:
-            course_commitment = 'No info'
+            commitment = 'No info'
         
         try:
-            course_avg_rating = re.sub('(Rated\s)|(\sout\sof\s5\sof\s)',
-                                '',
-                                soup.find('div', class_='ratings-text headline-2-text').contents[0].contents[1])
+            rating_soup = soup.find('div', class_='ratings-text headline-2-text').contents[0].contents[1]
         except AttributeError:
-            course_avg_rating = 'No rating'
-
-        course_nearest_start = re.sub("Starts\s",
-                               '',
-                               soup.find("div", class_='startdate rc-StartDateString caption-text').contents[0].string)
+            rating = 'No rating'
+        else:
+            # filter out anything but pure rating, maybe use as digit in future
+            rating = re.sub('(Rated\s)|(\sout\sof\s5\sof\s)', '', rating_soup)
         
-        print(".", end="")
-        return course_name, course_language, course_commitment, course_avg_rating,     course_nearest_start
+        start_soup = soup.find("div", class_='startdate rc-StartDateString caption-text').contents[0].string
+        start = re.sub("Starts\s", '', start_soup)
+        
+        return name, language, commitment, rating, start
 
 
 def output_courses_info_to_xlsx(filedata, filepath):
@@ -70,11 +69,12 @@ def main():
     random.shuffle(courses_urls)
     courses_data = []
     print("Working... may take some time.")
-    max_courses = 50
+    max_courses = 20
     for url in courses_urls[:max_courses]:
         courses_data.append(get_course_info(url))
     
     output_courses_info_to_xlsx(courses_data, filepath=filename)
+    print('Done! File {} created.'.format(filename))
 
 
 if __name__ == '__main__':
