@@ -11,11 +11,11 @@ coursera_xml_url = 'https://www.coursera.org/sitemap~www~courses.xml'
 
 def get_courses_list():
     try:
-        data = requests.get(coursera_xml_url).content
+        courses_data = requests.get(coursera_xml_url).content
     except requests.exceptions.ConnectionError as error:
         print(error)
     else:
-        element_tree_data = ElementTree.fromstring(data)
+        element_tree_data = ElementTree.fromstring(courses_data)
         return [element[0].text for element in element_tree_data]
 
 
@@ -27,27 +27,27 @@ def get_course_info(course_url):
     else:
         soup = BeautifulSoup(course_html, 'lxml')
         
-        name = soup.find("h1").string
-        language = soup.find('div', class_='language-info').contents[0].contents[1]
+        course_name = soup.find("h1").string
+        course_language = soup.find('div', class_='language-info').contents[0].contents[1]
         
         try:
-            commitment = soup.find('span', class_='td-title', string='Commitment').parent.parent.contents[1].string
+            course_commitment = soup.find('span', class_='td-title', string='Commitment').parent.parent.contents[1].string
         except AttributeError:
-            commitment = 'No info'
+            course_commitment = 'No info'
         
         try:
-            avg_rating = re.sub('(Rated\s)|(\sout\sof\s5\sof\s)',
+            course_avg_rating = re.sub('(Rated\s)|(\sout\sof\s5\sof\s)',
                                 '',
                                 soup.find('div', class_='ratings-text headline-2-text').contents[0].contents[1])
         except AttributeError:
-            avg_rating = 'No rating'
-        
-        nearest_start = re.sub("Starts\s",
+            course_avg_rating = 'No rating'
+
+        course_nearest_start = re.sub("Starts\s",
                                '',
                                soup.find("div", class_='startdate rc-StartDateString caption-text').contents[0].string)
         
         print(".", end="")
-        return name, language, commitment, avg_rating, nearest_start
+        return course_name, course_language, course_commitment, course_avg_rating,     course_nearest_start
 
 
 def output_courses_info_to_xlsx(filedata, filepath):
