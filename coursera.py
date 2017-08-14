@@ -6,10 +6,9 @@ import random
 import re
 import sys
 
-coursera_xml_url = 'https://www.coursera.org/sitemap~www~courses.xml'
-
 
 def get_courses_list():
+    coursera_xml_url = 'https://www.coursera.org/sitemap~www~courses.xml'
     try:
         courses_data = requests.get(coursera_xml_url).content
     except requests.exceptions.ConnectionError as error:
@@ -17,6 +16,7 @@ def get_courses_list():
     else:
         element_tree_data = ElementTree.fromstring(courses_data)
         return [element[0].text for element in element_tree_data]
+
 
 def load_html_from_url(url):
     try:
@@ -26,18 +26,16 @@ def load_html_from_url(url):
     else:
         return raw_html
 
-def get_course_info(course_html):
 
-    soup = BeautifulSoup(course_html, 'lxml')
-    
-    title = soup.find("h1").string
-    language = soup.find('div', class_='language-info').contents[0].contents[1]
-    
+def get_commitment(soup):
     try:
         commitment = soup.find('span', class_='td-title', string='Commitment').parent.parent.contents[1].string
     except AttributeError:
         commitment = 'No info'
-    
+    return commitment
+
+
+def get_rating(soup):
     try:
         rating_soup = soup.find('div', class_='ratings-text headline-2-text').contents[0].contents[1]
     except AttributeError:
@@ -45,9 +43,28 @@ def get_course_info(course_html):
     else:
         # filter out anything but pure rating, maybe use as digit in future
         rating = re.sub('(Rated\s)|(\sout\sof\s5\sof\s)', '', rating_soup)
-    
+    return rating
+
+
+def get_language(soup):
+    language = soup.find('div', class_='language-info').contents[0].contents[1]
+    return language
+
+
+def get_start(soup):
     start_soup = soup.find("div", class_='startdate rc-StartDateString caption-text').contents[0].string
     start = re.sub("Starts\s", '', start_soup)
+    return start
+
+
+def get_course_info(course_html):
+    soup = BeautifulSoup(course_html, 'lxml')
+    
+    title = soup.find("h1").string
+    language = get_language(soup)
+    commitment = get_commitment(soup)
+    rating = get_rating(soup)
+    start = get_start(soup)
     
     return title, language, commitment, rating, start
 
@@ -64,15 +81,15 @@ def output_courses_info_to_xlsx(filedata, filepath):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: coursera.py [filename]")
-        exit()
+        filename = 'coursera.xlsx'
+    else:
+        filename = sys.argv[1]
     
-    filename = sys.argv[1]
     courses_urls = get_courses_list()
     random.shuffle(courses_urls)
     courses_data = []
     print("Working... may take some time.")
-    max_courses = 3
+    max_courses = 20
     for url in courses_urls[:max_courses]:
         courses_data.append(get_course_info(load_html_from_url(url)))
     

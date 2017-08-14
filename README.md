@@ -1,6 +1,6 @@
 # Coursera Dump
 
-This script will get random 50 courses from [Coursera xml feed](https://www.coursera.org/sitemap~www~courses.xml), then parse some data directly from coursera webpage using BeautifulSoup4 and, finally, will create .xlsx file with parsed data.
+This script will get random 20 courses from [Coursera xml feed](https://www.coursera.org/sitemap~www~courses.xml), then parse some data directly from coursera webpage using BeautifulSoup4 and, finally, will create .xlsx file with parsed data.
 
 Anton Demkin, 2017
 
@@ -12,9 +12,13 @@ pip3 install -r requirements.txt
 
 # How to use
 
-Simply run this script with output excel file as single argument. Script will automatically do the rest. Excel file will be created in same folder with this script.
+Simply run this script without any arguments or with output excel file as single argument . Script will automatically do the rest. Excel file will be created in same folder with this script. Default file name is coursera.xlsx.
 ```
 python3 coursera.py coursera.xlsx 
+```
+or
+```
+python3 coursera.py
 ```
 
 # Project Goals
